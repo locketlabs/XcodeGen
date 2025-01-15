@@ -102,6 +102,8 @@ public class PBXProjGenerator {
                 name: project.name,
                 buildConfigurationList: buildConfigList,
                 compatibilityVersion: project.compatibilityVersion,
+                preferredProjectObjectVersion: nil,
+                minimizedProjectReferenceProxies: nil,
                 mainGroup: mainGroup,
                 developmentRegion: developmentRegion
             )
@@ -1445,7 +1447,7 @@ public class PBXProjGenerator {
         targetObject.dependencies = dependencies
         targetObject.productName = target.name
         targetObject.buildRules = buildRules
-        targetObject.packageProductDependencies = packageDependencies
+        targetObject.packageProductDependencies = !packageDependencies.isEmpty ? packageDependencies : nil
         targetObject.product = targetFileReference
         if !target.isLegacy {
             targetObject.productType = target.type
@@ -1537,7 +1539,7 @@ public class PBXProjGenerator {
                     return path.first(where: { $0.lastComponent == "Info.plist" })
                 }
             }
-            .first
+            .first?.normalize()
     }
 
     func getAllDependenciesPlusTransitiveNeedingEmbedding(target topLevelTarget: Target) -> [Dependency] {
