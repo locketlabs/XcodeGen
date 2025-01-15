@@ -542,6 +542,7 @@ A source can be provided via a string (the path) or an object of the form:
 	- `file`: a file reference with a parent group will be created (Default for files or directories with extensions)
 	- `group`: a group with all it's containing files. (Default for directories without extensions)
 	- `folder`: a folder reference.
+	- `synchronized`: a synchronized group that automatically updates its contents when files are added or removed in Xcode. This is useful for directories that are frequently modified.
 - [ ] **headerVisibility**: **String** - The visibility of any headers. This defaults to `public`, but can be either:
 	- `public`
 	- `private`
