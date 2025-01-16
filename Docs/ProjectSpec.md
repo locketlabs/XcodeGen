@@ -580,6 +580,8 @@ targets:
             subpath: include/$(PRODUCT_NAME)
       - path: Resources
         type: folder
+      - path: Sources
+        type: synchronized
       - path: Path/To/File.asset
         resourceTags: [tag1, tag2]
 ```

@@ -505,4 +505,88 @@ class PBXProjGeneratorTests: XCTestCase {
         }
     }
 
+    func testSynchronizedGroups() {
+        describe {
+            let directoryPath = Path("TestDirectory")
+
+            func createDirectories(_ directories: String) throws {
+                let yaml = try Yams.load(yaml: directories)!
+
+                func getFiles(_ file: Any, path: Path) -> [Path] {
+                    if let array = file as? [Any] {
+                        return array.flatMap { getFiles($0, path: path) }
+                    } else if let string = file as? String {
+                        return [path + string]
+                    } else if let dictionary = file as? [String: Any] {
+                        var array: [Path] = []
+                        for (key, value) in dictionary {
+                            array += getFiles(value, path: path + key)
+                        }
+                        return array
+                    } else {
+                        return []
+                    }
+                }
+
+                let files = getFiles(yaml, path: directoryPath).filter { $0.extension != nil }
+                for file in files {
+                    try file.parent().mkpath()
+                    try file.write("")
+                }
+            }
+
+            func removeDirectories() {
+                try? directoryPath.delete()
+            }
+
+            $0.before {
+                removeDirectories()
+            }
+
+            $0.after {
+                removeDirectories()
+            }
+
+            $0.it("creates synchronized groups at top level and under parent groups") {
+                let directories = """
+                    Sources:
+                      - file1.swift
+                      - file2.swift
+
+                    Resources:
+                      - image1.png
+                      - image2.png
+                """
+                try createDirectories(directories)
+
+                let target = Target(
+                    name: "Test",
+                    type: .application,
+                    platform: .iOS,
+                    sources: [
+                        TargetSource(path: "Sources", type: .synchronized),
+                        TargetSource(path: "Resources", group: "Assets", type: .synchronized)
+                    ]
+                )
+                let project = Project(basePath: directoryPath, name: "Test", targets: [target])
+
+                let pbxProj = try project.generatePbxProj()
+                let mainGroup = try pbxProj.getMainGroup()
+
+                // Verify top-level synchronized group
+                let sourcesGroup = mainGroup.children.first { $0.path == "Sources" }
+                try expect(sourcesGroup).to.beOfType(PBXFileSystemSynchronizedRootGroup.self)
+
+                // Verify nested synchronized group
+                let assetsGroup = mainGroup.children.first { $0.nameOrPath == "Assets" } as? PBXGroup
+                guard let assetsGroup else {
+                    throw failure("Couldn't find assets group")
+                }
+
+                let resourcesGroup = assetsGroup.children.first { $0.path == "Resources" }
+                try expect(resourcesGroup).to.beOfType(PBXFileSystemSynchronizedRootGroup.self)
+            }
+        }
+    }
+
 }
