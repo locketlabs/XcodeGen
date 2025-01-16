@@ -7,7 +7,7 @@ import XcodeGenCore
 struct SourceFile {
     let path: Path
     let fileReference: PBXFileElement
-    let buildFile: PBXBuildFile
+    let buildFile: PBXBuildFile?
     let buildPhase: BuildPhaseSpec?
 }
 
@@ -16,6 +16,7 @@ class SourceGenerator {
     var rootGroups: Set<PBXFileElement> = []
     private let projectDirectory: Path?
     private var fileReferencesByPath: [String: PBXFileElement] = [:]
+    private var buildableFoldersByPath: [Path: PBXFileElement] = [:]
     private var groupsByPath: [Path: PBXGroup] = [:]
     private var variantGroupsByPath: [Path: PBXVariantGroup] = [:]
 
@@ -620,6 +621,36 @@ class SourceGenerator {
         let sourceReference: PBXFileElement
         var sourcePath = path
         switch type {
+        case .buildableFolder:
+            let fileReferencePath = (try? path.relativePath(from: project.basePath)) ?? path
+            var fileReferenceName: String? = targetSource.name ?? fileReferencePath.lastComponent
+            if fileReferencePath.string == fileReferenceName {
+                fileReferenceName = nil
+            }
+
+            let fileReference: PBXFileElement
+            if let existingReference = buildableFoldersByPath[fileReferencePath] {
+                fileReference = existingReference
+            } else {
+                fileReference = PBXFileSystemSynchronizedRootGroup(
+                    sourceTree: .group,
+                    path: fileReferencePath.string,
+                    name: fileReferenceName
+                )
+                buildableFoldersByPath[fileReferencePath] = fileReference
+            }
+            if !hasCustomParent || path.parent() == project.basePath {
+                rootGroups.insert(fileReference)
+            }
+            let sourceFile = SourceFile(
+                path: path,
+                fileReference: fileReference,
+                buildFile: nil,
+                buildPhase: nil
+            )
+            sourceFiles.append(sourceFile)
+            sourceReference = fileReference
+
         case .folder:
             let fileReference = getFileReference(
                 path: path,

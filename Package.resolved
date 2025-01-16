@@ -75,10 +75,10 @@
     {
       "identity" : "xcodeproj",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tuist/XcodeProj.git",
+      "location" : "https://github.com/locketlabs/XcodeProj.git",
       "state" : {
-        "revision" : "447c159b0c5fb047a024fd8d942d4a76cf47dde0",
-        "version" : "8.16.0"
+        "branch" : "main",
+        "revision" : "b91cc3b2e55285350cd9a5954530aaab51a818fa"
       }
     },
     {

@@ -102,6 +102,8 @@ public class PBXProjGenerator {
                 name: project.name,
                 buildConfigurationList: buildConfigList,
                 compatibilityVersion: project.compatibilityVersion,
+                preferredProjectObjectVersion: nil,
+                minimizedProjectReferenceProxies: nil,
                 mainGroup: mainGroup,
                 developmentRegion: developmentRegion
             )
@@ -689,6 +691,17 @@ public class PBXProjGenerator {
 
         var dependencies: [PBXTargetDependency] = []
         var targetFrameworkBuildFiles: [PBXBuildFile] = []
+        var buildableFolders: Set<PBXFileSystemSynchronizedRootGroup> = []
+        
+        for sourceFile in sourceFiles {
+            if let buildableFolder = sourceFile.fileReference as? PBXFileSystemSynchronizedRootGroup {
+                let (inserted, _) = buildableFolders.insert(buildableFolder)
+                if inserted {
+                    addObject(buildableFolder)
+                }
+            }
+        }
+        
         var frameworkBuildPaths = Set<String>()
         var customCopyDependenciesReferences: [PBXBuildFile] = []
         var copyFilesBuildPhasesFiles: [BuildPhaseSpec.CopyFilesSettings: [PBXBuildFile]] = [:]
@@ -1073,7 +1086,8 @@ public class PBXProjGenerator {
                         output.append(sourceFile)
                     }
                 }
-                .map { addObject($0.buildFile) }
+                .compactMap(\.buildFile)
+                .map { addObject($0) }
         }
 
         func getBuildFilesForPhase(_ buildPhase: BuildPhase) -> [PBXBuildFile] {
@@ -1445,8 +1459,9 @@ public class PBXProjGenerator {
         targetObject.dependencies = dependencies
         targetObject.productName = target.name
         targetObject.buildRules = buildRules
-        targetObject.packageProductDependencies = packageDependencies
+        targetObject.packageProductDependencies = !packageDependencies.isEmpty ? packageDependencies : nil
         targetObject.product = targetFileReference
+        targetObject.fileSystemSynchronizedGroups = !buildableFolders.isEmpty ? Array(buildableFolders).sorted(by: PBXFileElement.sortByNamePath) : nil
         if !target.isLegacy {
             targetObject.productType = target.type
         }
@@ -1537,7 +1552,7 @@ public class PBXProjGenerator {
                     return path.first(where: { $0.lastComponent == "Info.plist" })
                 }
             }
-            .first
+            .first?.normalize()
     }
 
     func getAllDependenciesPlusTransitiveNeedingEmbedding(target topLevelTarget: Target) -> [Dependency] {

@@ -145,6 +145,11 @@ targets:
         type: folder
         buildPhase: none
         group: CustomGroup
+      - path: BuildableFolder
+        type: buildableFolder
+      - path: BuildableFolder
+        type: buildableFolder
+        group: CustomGroup
       - path: Mintfile
         type: file
         buildPhase: none
