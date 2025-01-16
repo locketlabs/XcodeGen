@@ -16,6 +16,7 @@ class SourceGenerator {
     var rootGroups: Set<PBXFileElement> = []
     private let projectDirectory: Path?
     private var fileReferencesByPath: [String: PBXFileElement] = [:]
+    private var buildableFoldersByPath: [Path: PBXFileElement] = [:]
     private var groupsByPath: [Path: PBXGroup] = [:]
     private var variantGroupsByPath: [Path: PBXVariantGroup] = [:]
 
@@ -627,11 +628,17 @@ class SourceGenerator {
                 fileReferenceName = nil
             }
 
-            let fileReference = PBXFileSystemSynchronizedRootGroup(
-                sourceTree: .group,
-                path: fileReferencePath.string,
-                name: fileReferenceName
-            )
+            let fileReference: PBXFileElement
+            if let existingReference = buildableFoldersByPath[fileReferencePath] {
+                fileReference = existingReference
+            } else {
+                fileReference = PBXFileSystemSynchronizedRootGroup(
+                    sourceTree: .group,
+                    path: fileReferencePath.string,
+                    name: fileReferenceName
+                )
+                buildableFoldersByPath[fileReferencePath] = fileReference
+            }
             if !hasCustomParent || path.parent() == project.basePath {
                 rootGroups.insert(fileReference)
             }

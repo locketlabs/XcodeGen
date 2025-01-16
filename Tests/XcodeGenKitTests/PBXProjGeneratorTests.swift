@@ -585,6 +585,65 @@ class PBXProjGeneratorTests: XCTestCase {
 
                 let resourcesGroup = assetsGroup.children.first { $0.path == "Resources" }
                 try expect(resourcesGroup).to.beOfType(PBXFileSystemSynchronizedRootGroup.self)
+
+                // Verify fileSystemSynchronizedGroups on target
+                guard let nativeTarget = pbxProj.nativeTargets.first(where: { $0.name == "Test" }) else {
+                    throw failure("Couldn't find native target")
+                }
+                try expect(nativeTarget.fileSystemSynchronizedGroups?.count) == 2
+                try expect(nativeTarget.fileSystemSynchronizedGroups) == [resourcesGroup, sourcesGroup]
+            }
+
+            $0.it("reuses buildable folder references for the same path") {
+                let directories = """
+                    Sources:
+                      - file1.swift
+                      - file2.swift
+                """
+                try createDirectories(directories)
+
+                let target = Target(
+                    name: "Test",
+                    type: .application,
+                    platform: .iOS,
+                    sources: [
+                        // Reference same path in two different places
+                        TargetSource(path: "Sources", type: .buildableFolder),
+                        TargetSource(path: "Sources", group: "Group1", type: .buildableFolder),
+                        TargetSource(path: "Sources", group: "Group2", type: .buildableFolder)
+                    ]
+                )
+                let project = Project(basePath: directoryPath, name: "Test", targets: [target])
+
+                let pbxProj = try project.generatePbxProj()
+                let mainGroup = try pbxProj.getMainGroup()
+
+                // Get all references to the Sources folder
+                let sourcesReferences = mainGroup.children.filter { $0.path == "Sources" }
+                let group1References = mainGroup.children
+                    .compactMap { $0 as? PBXGroup }
+                    .first { $0.nameOrPath == "Group1" }?
+                    .children
+                    .filter { $0.path == "Sources" }
+                let group2References = mainGroup.children
+                    .compactMap { $0 as? PBXGroup }
+                    .first { $0.nameOrPath == "Group2" }?
+                    .children
+                    .filter { $0.path == "Sources" }
+
+                // Verify all references are the same object
+                let allReferences = sourcesReferences + (group1References ?? []) + (group2References ?? [])
+                try expect(allReferences.count) == 3
+                try expect(Set(allReferences.map { ObjectIdentifier($0) }).count) == 1
+                try expect(allReferences[0]).to.beOfType(PBXFileSystemSynchronizedRootGroup.self)
+
+                // Verify fileSystemSynchronizedGroups on target
+                guard let nativeTarget = pbxProj.nativeTargets.first(where: { $0.name == "Test" }) else {
+                    throw failure("Couldn't find native target")
+                }
+
+                try expect(nativeTarget.fileSystemSynchronizedGroups?.count) == 1
+                try expect(nativeTarget.fileSystemSynchronizedGroups) == [allReferences[0]]
             }
         }
     }
