@@ -505,7 +505,7 @@ class PBXProjGeneratorTests: XCTestCase {
         }
     }
 
-    func testSynchronizedGroups() {
+    func testBuildableFolders() {
         describe {
             let directoryPath = Path("TestDirectory")
 
@@ -547,7 +547,7 @@ class PBXProjGeneratorTests: XCTestCase {
                 removeDirectories()
             }
 
-            $0.it("creates synchronized groups at top level and under parent groups") {
+            $0.it("creates buildable folders at top level and under parent groups") {
                 let directories = """
                     Sources:
                       - file1.swift
@@ -564,8 +564,8 @@ class PBXProjGeneratorTests: XCTestCase {
                     type: .application,
                     platform: .iOS,
                     sources: [
-                        TargetSource(path: "Sources", type: .synchronized),
-                        TargetSource(path: "Resources", group: "Assets", type: .synchronized)
+                        TargetSource(path: "Sources", type: .buildableFolder),
+                        TargetSource(path: "Resources", group: "Assets", type: .buildableFolder)
                     ]
                 )
                 let project = Project(basePath: directoryPath, name: "Test", targets: [target])
@@ -573,11 +573,11 @@ class PBXProjGeneratorTests: XCTestCase {
                 let pbxProj = try project.generatePbxProj()
                 let mainGroup = try pbxProj.getMainGroup()
 
-                // Verify top-level synchronized group
+                // Verify top-level buildable folder
                 let sourcesGroup = mainGroup.children.first { $0.path == "Sources" }
                 try expect(sourcesGroup).to.beOfType(PBXFileSystemSynchronizedRootGroup.self)
 
-                // Verify nested synchronized group
+                // Verify nested buildable folder
                 let assetsGroup = mainGroup.children.first { $0.nameOrPath == "Assets" } as? PBXGroup
                 guard let assetsGroup else {
                     throw failure("Couldn't find assets group")

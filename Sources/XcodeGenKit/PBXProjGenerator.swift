@@ -691,12 +691,12 @@ public class PBXProjGenerator {
 
         var dependencies: [PBXTargetDependency] = []
         var targetFrameworkBuildFiles: [PBXBuildFile] = []
-        var fileSystemSynchronizedGroups: [PBXFileSystemSynchronizedRootGroup] = []
+        var buildableFolders: [PBXFileSystemSynchronizedRootGroup] = []
         
         for sourceFile in sourceFiles {
-            if let synchronizedGroup = sourceFile.fileReference as? PBXFileSystemSynchronizedRootGroup {
-                fileSystemSynchronizedGroups.append(synchronizedGroup)
-                addObject(synchronizedGroup)
+            if let buildableFolder = sourceFile.fileReference as? PBXFileSystemSynchronizedRootGroup {
+                buildableFolders.append(buildableFolder)
+                addObject(buildableFolder)
             }
         }
         
@@ -1459,7 +1459,7 @@ public class PBXProjGenerator {
         targetObject.buildRules = buildRules
         targetObject.packageProductDependencies = !packageDependencies.isEmpty ? packageDependencies : nil
         targetObject.product = targetFileReference
-        targetObject.fileSystemSynchronizedGroups = !fileSystemSynchronizedGroups.isEmpty ? fileSystemSynchronizedGroups : nil
+        targetObject.fileSystemSynchronizedGroups = !buildableFolders.isEmpty ? buildableFolders : nil
         if !target.isLegacy {
             targetObject.productType = target.type
         }

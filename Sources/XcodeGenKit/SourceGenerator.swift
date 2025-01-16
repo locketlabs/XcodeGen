@@ -620,7 +620,7 @@ class SourceGenerator {
         let sourceReference: PBXFileElement
         var sourcePath = path
         switch type {
-        case .synchronized:
+        case .buildableFolder:
             let fileReferencePath = (try? path.relativePath(from: project.basePath)) ?? path
             var fileReferenceName: String? = targetSource.name ?? fileReferencePath.lastComponent
             if fileReferencePath.string == fileReferenceName {

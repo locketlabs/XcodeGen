@@ -11,5 +11,5 @@ public enum SourceType: String {
     case group
     case file
     case folder
-    case synchronized
+    case buildableFolder
 }
