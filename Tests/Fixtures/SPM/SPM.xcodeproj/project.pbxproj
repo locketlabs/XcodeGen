@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -16,6 +16,8 @@
 				D287BAAB664D1A024D9DD57E /* PBXTargetDependency */,
 			);
 			name = AggTarget;
+			packageProductDependencies = (
+			);
 			productName = AggTarget;
 		};
 /* End PBXAggregateTarget section */
@@ -235,8 +237,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 425866ADA259DB93FC4AF1E3 /* Build configuration list for PBXProject "SPM" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -637,6 +637,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		630A8CE9F2BE39704ED9D461 /* XCLocalSwiftPackageReference "FooFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = FooFeature;
+		};
+		C6539B364583AE96C18CE377 /* XCLocalSwiftPackageReference "../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		348C81C327DB1710B742C370 /* XCRemoteSwiftPackageReference "Prefire" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -663,17 +674,6 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		630A8CE9F2BE39704ED9D461 /* XCLocalSwiftPackageReference "FooFeature" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = FooFeature;
-		};
-		C6539B364583AE96C18CE377 /* XCLocalSwiftPackageReference "../../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../..;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		15DB49096E2978F6BCA8D604 /* FooUI */ = {
